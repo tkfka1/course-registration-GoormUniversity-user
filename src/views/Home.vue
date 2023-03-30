@@ -7,14 +7,10 @@ import { ref } from 'vue';
 const authStore = useAuthStore();
 const { user } = storeToRefs(authStore);
 
-console.log(user._object.user.id)
-
-
 const name = ref("이름");
 const studentId = ref("학번");
 
 fetchWrapper.get(`/api/user/auth/${user._object.user.id}`).then((res) => {
-    console.log(res);
     name.value = res.name;
     studentId.value = res.studentId;
 

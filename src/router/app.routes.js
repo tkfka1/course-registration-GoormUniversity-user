@@ -1,7 +1,7 @@
-import { Layout, List, AddEdit } from '@/views/users';
+import { Layout, List } from '@/views/app';
 
 export default {
-    path: '/users',
+    path: '/app',
     component: Layout,
     children: [
         { path: '', component: List }

@@ -5,6 +5,8 @@ import { Home } from '@/views';
 import accountRoutes from './account.routes';
 import usersRoutes from './users.routes';
 import lectureRoutes from './lecture.routes';
+import mypageRoutes from './mypage.routes';
+import appRoutes from './app.routes';
 
 export const router = createRouter({
 
@@ -15,6 +17,8 @@ export const router = createRouter({
         { ...accountRoutes },
         { ...usersRoutes },
         { ...lectureRoutes },
+        { ...mypageRoutes },
+        { ...appRoutes },
         // catch all redirect to home page
         { path: '/:pathMatch(.*)*', redirect: '/' }
     ]

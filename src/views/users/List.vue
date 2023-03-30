@@ -51,12 +51,12 @@ function myinfo(){
 myinfo()
 
 
-async function takeLectureClass(id,lid,name,cred) {
+async function takeLectureClass(id,name,cred) {
     var data = new Object();
     var lectureClass = new Object();
     var user = new Object();
     lectureClass.id = String(id);
-    user.id = lid;
+    user.id = myid.value;
     data.lectureClass = lectureClass;
     data.user = user;
     data.credit = cred;
@@ -82,14 +82,14 @@ async function takeLectureClass(id,lid,name,cred) {
         }
     }
     takeLectureStore.getAll();
-    lectureClassStore.getAll();
+    cartLectureStore.getAll();
     myinfo();
 }
 
 async function delLectureClass(id) {
     await takeLectureStore.delete(id)
     myinfo();
-    lectureClassStore.getAll();
+    cartLectureStore.getAll();
     alertStore.success('수강 삭제 완료');
 }
 
@@ -118,14 +118,14 @@ function searchLectureClassBTN(){
     if (searchLectureClassName.value == ""){
         return;
     }
-    lectureClassStore.getAll();
+    cartLectureStore.getAll();
 }
 
 
 
 function changeSelectCredit(event){
     searchLectureClassCredit.value = event.target.value;
-    lectureClassStore.getAll();
+    cartLectureStore.getAll();
 }
 
 function findCredit(credit){
@@ -148,7 +148,7 @@ function changeSelectMajor(event){
     }else{
         searchLectureClassMajor.value = "";
     }
-    lectureClassStore.getAll();
+    cartLectureStore.getAll();
 }
 
 function findMajorName(majorId){
@@ -164,8 +164,7 @@ function findMajorName(majorId){
 
 function changeSelectWeek(event){
     searchLectureClassWeek.value = event.target.value;
-    lectureClassStore.getAll();
-
+    cartLectureStore.getAll();
 }
 
 function findWeek(week){
@@ -238,7 +237,7 @@ function makeList(){
                             <!-- <router-link :to="`/users/take/${us.id}`" class="btn btn-sm btn-secondary mr-1">강의세부</router-link> -->
                             <button @click="delLectureClass(us.id)" class="btn btn-sm btn-danger mr-1" :disabled="user.isDeleting">
                                 <span v-if="user.isDeleting" class="spinner-border spinner-border-sm"></span>
-                                <span v-else>수강삭제</span>
+                                <span v-else>수강취소</span>
                             </button>
                         </td>
                     </tr>
@@ -313,19 +312,22 @@ function makeList(){
         </thead>
         <tbody>
                 <template v-if="cart.length">
-                    <!-- <tr v-for="us in cart.filter((c) => findCredit(c.lecture.credit) && findWeek(c.week) && findMajorName(c.lecture.major.name) && findKeyWord(c.lecture.name) )" :key="us.id" > -->
-                    <tr v-for="us in cart" :key="us.id" >
-                        <!-- <td>{{ us.lecture.name }}</td>
-                        <td>{{ us.lecture.major.name }}</td>
-                        <td>{{ us.professor.name }}</td>
-                        <td>{{ us.lecture.credit }}</td>
-                        <td>{{ us.classPeople }} / {{ us.classMax }}</td>
-                        <td>{{ makeweek(us.week) }} / {{ us.period }}교시</td> -->
-                        <td>{{ us.lectureClass.name }}</td>
+                    <tr v-for="us in cart.filter((c) => findCredit(c.lectureClass.lecture.credit) && findWeek(c.lectureClass.week) && findMajorName(c.lectureClass.lecture.major.name) && findKeyWord(c.lectureClass.lecture.name) )" :key="us.id" >
+                    <!-- <tr v-for="us in cart" :key="us.id" > -->
+                        <td>{{ us.lectureClass.lecture.name }}</td>
+                        <td>{{ us.lectureClass.lecture.major.name }}</td>
+                        <td>{{ us.lectureClass.professor.name }}</td>
+                        <td>{{ us.lectureClass.lecture.credit }}</td>
+                        <td>{{ us.lectureClass.classPeople }} / {{ us.lectureClass.classMax }}</td>
+                        <td>{{ makeweek(us.lectureClass.week) }} / {{ us.lectureClass.period }}교시</td>
                         <td style="white-space: nowrap">
                             <!-- <router-link :to="`/lecture/class/${user._object.user.id}/edit/${user.id}`" class="btn btn-sm btn-secondary mr-1">강의세부</router-link> -->
-                            <button @click="takeLectureClass(us.id, makeList(), us.lecture.name , us.lecture.credit )" class="btn btn-sm btn-primary mr-1" :disabled="user.isDeleting">
+                            <button @click="takeLectureClass(us.id, us.lectureClass.lecture.name , us.lectureClass.lecture.credit )" class="btn btn-sm btn-primary mr-1" :disabled="us.isDeleting">
                                 <span>수강신청</span>
+                            </button>
+                            <button @click="cartLectureStore.delete(us.id)" class="btn btn-sm btn-danger btn-delete-user" :disabled="us.isDeleting">
+                            <span v-if="cart.isDeleting" class="spinner-border spinner-border-sm"></span>
+                            <span v-else>삭제</span>
                             </button>
                         </td>
                     </tr>

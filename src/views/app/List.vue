@@ -1,7 +1,7 @@
 <script setup>
 import { storeToRefs } from 'pinia';
 import { useRoute } from 'vue-router';
-import { useLectureClassStore , useAlertStore , useAuthStore , useTakeLectureStore , useCartLectureStore} from '@/stores';
+import { useTakeLectureStore , useCartLectureStore , useAlertStore , useAuthStore} from '@/stores';
 import { fetchWrapper } from '@/helpers';
 import { ref } from 'vue';
 import { number } from 'yup';
@@ -11,12 +11,17 @@ const authStore = useAuthStore();
 const { user } = storeToRefs(authStore);
 
 const takeLectureStore = useTakeLectureStore();
+const { take } = storeToRefs(takeLectureStore);
+takeLectureStore.getAll();
+
 const cartLectureStore = useCartLectureStore();
-const lectureClassStore = useLectureClassStore();
-const { lectureClass } = storeToRefs(lectureClassStore);
-lectureClassStore.getAll();
+const { cart } = storeToRefs(cartLectureStore);
+cartLectureStore.getAll();
 
 const alertStore = useAlertStore();
+
+console.log(user._object.user.id)
+console.log(typeof(user._object.user.id))
 
 // 내 정보 가져오기
 const myid = ref(0);
@@ -68,50 +73,23 @@ async function takeLectureClass(id,lid,name,cred) {
 
     try {
         await takeLectureStore.register(data);
-        alertStore.success( name + ' 수강신청 등록 완료');
+        alertStore.success( name + ' 수강 신청 완료');
     } catch (error) {
         if(error == "500"){
-            alertStore.error("이미 수강신청이 되어있는 강의입니다.");
+            alertStore.error("이미 수강신청된 강의입니다.");
         }else{
             alertStore.error(error);
         }
     }
-    lectureClassStore.getAll();
+    takeLectureStore.getAll();
+    cartLectureStore.getAll();
     myinfo();
 }
-
-async function cartLectureClass(id,lid,name,cred) {
-    var data = new Object();
-    var lectureClass = new Object();
-    var user = new Object();
-    lectureClass.id = String(id);
-    user.id = lid;
-    data.lectureClass = lectureClass;
-    data.user = user;
-    data.credit = cred;
-
-    //같은 강의 다른교수
-
-    try {
-        await cartLectureStore.register(data);
-        alertStore.success( name + ' 장바구니 등록 완료');
-    } catch (error) {
-        if(error == "500"){
-            alertStore.error("이미 장바구니에 있는 강의입니다");
-        }else{
-            alertStore.error(error);
-        }
-    }
-    lectureClassStore.getAll();
-    myinfo();
-}
-
-
 
 async function delLectureClass(id) {
     await takeLectureStore.delete(id)
     myinfo();
-    lectureClassStore.getAll();
+    cartLectureStore.getAll();
     alertStore.success('수강 삭제 완료');
 }
 
@@ -140,14 +118,14 @@ function searchLectureClassBTN(){
     if (searchLectureClassName.value == ""){
         return;
     }
-    lectureClassStore.getAll();
+    cartLectureStore.getAll();
 }
 
 
 
 function changeSelectCredit(event){
     searchLectureClassCredit.value = event.target.value;
-    lectureClassStore.getAll();
+    cartLectureStore.getAll();
 }
 
 function findCredit(credit){
@@ -170,7 +148,7 @@ function changeSelectMajor(event){
     }else{
         searchLectureClassMajor.value = "";
     }
-    lectureClassStore.getAll();
+    cartLectureStore.getAll();
 }
 
 function findMajorName(majorId){
@@ -186,8 +164,7 @@ function findMajorName(majorId){
 
 function changeSelectWeek(event){
     searchLectureClassWeek.value = event.target.value;
-    lectureClassStore.getAll();
-
+    cartLectureStore.getAll();
 }
 
 function findWeek(week){
@@ -234,7 +211,54 @@ function makeList(){
     <br>
     <div class="form-row">
         <div class="form-group col">
-            <h4 style="">수강 가능 목록</h4>
+            <h4 style="">수강 목록</h4>
+        </div>
+    </div>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>강의이름</th>
+                <th>전공</th>
+                <th>교수이름</th>
+                <th>학점</th>
+                <th>요일/교시</th>
+                <th style="width: 1%"></th>
+            </tr>
+        </thead>
+        <tbody>
+            <template v-if="take.length">
+                    <tr v-for="us in take.filter((u) => u.user.id ==  makeList())" :key="us.id">
+                        <td>{{ us.lectureClass.lecture.name }}</td>
+                        <td>{{ us.lectureClass.lecture.major.name }}</td>
+                        <td>{{ us.lectureClass.professor.name }}</td>
+                        <td>{{ us.lectureClass.lecture.credit }}</td>
+                        <td>{{ makeweek(us.lectureClass.week) }} / {{ us.lectureClass.period }}교시</td>
+                        <td style="white-space: nowrap">
+                            <!-- <router-link :to="`/users/take/${us.id}`" class="btn btn-sm btn-secondary mr-1">강의세부</router-link> -->
+                            <button @click="delLectureClass(us.id)" class="btn btn-sm btn-danger mr-1" :disabled="user.isDeleting">
+                                <span v-if="user.isDeleting" class="spinner-border spinner-border-sm"></span>
+                                <span v-else>수강취소</span>
+                            </button>
+                        </td>
+                    </tr>
+            </template>
+            <tr v-if="take.loading">
+                <td colspan="4" class="text-center">
+                    <span class="spinner-border spinner-border-lg align-center"></span>
+                </td>
+            </tr>
+            <tr v-if="take.error">
+                <td colspan="4">
+                    <div class="text-danger">Error loading take: {{take.error}}</div>
+                </td>
+            </tr>            
+        </tbody>
+    </table>
+
+    <br>
+    <div class="form-row">
+        <div class="form-group col">
+            <h4 style="">장바구니</h4>
         </div>
         <div class="form-group col">
             <select class="custom-select" @change="changeSelectCredit($event)" >
@@ -287,28 +311,28 @@ function makeList(){
             </tr>
         </thead>
         <tbody>
-                <template v-if="lectureClass.length">
-                    <tr v-for="user in lectureClass.filter((l) => findCredit(l.lecture.credit) && findWeek(l.week) && findMajorName(l.lecture.major.name) && findKeyWord(l.lecture.name) )" :key="user.id" >
-                        <td>{{ user.lecture.name }}</td>
-                        <td>{{ user.lecture.major.name }}</td>
-                        <td>{{ user.professor.name }}</td>
-                        <td>{{ user.lecture.credit }}</td>
-                        <td>{{ user.classPeople }} / {{ user.classMax }}</td>
-                        <td>{{ makeweek(user.week) }} / {{ user.period }}교시</td>
+                <template v-if="cart.length">
+                    <tr v-for="us in cart.filter((c) => findCredit(c.lectureClass.lecture.credit) && findWeek(c.lectureClass.week) && findMajorName(c.lectureClass.lecture.major.name) && findKeyWord(c.lectureClass.lecture.name) )" :key="us.id" >
+                    <!-- <tr v-for="us in cart" :key="us.id" > -->
+                        <td>{{ us.lectureClass.lecture.name }}</td>
+                        <td>{{ us.lectureClass.lecture.major.name }}</td>
+                        <td>{{ us.lectureClass.professor.name }}</td>
+                        <td>{{ us.lectureClass.lecture.credit }}</td>
+                        <td>{{ us.lectureClass.classPeople }} / {{ us.lectureClass.classMax }}</td>
+                        <td>{{ makeweek(us.lectureClass.week) }} / {{ us.lectureClass.period }}교시</td>
                         <td style="white-space: nowrap">
-                            <button @click="takeLectureClass(user.id, makeList(), user.lecture.name , user.lecture.credit )" class="btn btn-sm btn-secondary mr-1" :disabled="user.isDeleting">
-                                <span>강의세부</span>
-                            </button>
-                            <button @click="cartLectureClass(user.id, makeList(), user.lecture.name , user.lecture.credit )" class="btn btn-sm btn-info mr-1" :disabled="user.isDeleting">
-                                <span>장바구니</span>
-                            </button>
-                            <button @click="takeLectureClass(user.id, makeList(), user.lecture.name , user.lecture.credit )" class="btn btn-sm btn-primary mr-1" :disabled="user.isDeleting">
+                            <!-- <router-link :to="`/lecture/class/${user._object.user.id}/edit/${user.id}`" class="btn btn-sm btn-secondary mr-1">강의세부</router-link> -->
+                            <button @click="takeLectureClass(us.id, makeList(), us.lecture.name , us.lecture.credit )" class="btn btn-sm btn-primary mr-1" :disabled="us.isDeleting">
                                 <span>수강신청</span>
+                            </button>
+                            <button @click="cartLectureStore.delete(us.id)" class="btn btn-sm btn-danger btn-delete-user" :disabled="us.isDeleting">
+                            <span v-if="user.isDeleting" class="spinner-border spinner-border-sm"></span>
+                            <span v-else>삭제</span>
                             </button>
                         </td>
                     </tr>
                 </template>
-            <tr v-if="lectureClass.loading">
+            <tr v-if="cart.loading">
                 <td colspan="4" class="text-center">
                     <span class="spinner-border spinner-border-lg align-center"></span>
                 </td>
