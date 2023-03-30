@@ -65,7 +65,6 @@ async function takeLectureClass(id,lid,name,cred) {
 
 
     // 인원꽉참
-
     try {
         await takeLectureStore.register(data);
         alertStore.success( name + ' 수강신청 등록 완료');

@@ -56,7 +56,7 @@ async function takeLectureClass(id,name,cred) {
     var lectureClass = new Object();
     var user = new Object();
     lectureClass.id = String(id);
-    user.id = myid.value;
+    user.id = String(myid.value);
     data.lectureClass = lectureClass;
     data.user = user;
     data.credit = cred;
@@ -68,9 +68,7 @@ async function takeLectureClass(id,name,cred) {
 
     //같은 강의 다른교수
 
-
     // 인원꽉참
-
     try {
         await takeLectureStore.register(data);
         alertStore.success( name + ' 수강 신청 완료');
@@ -322,7 +320,7 @@ function makeList(){
                         <td>{{ makeweek(us.lectureClass.week) }} / {{ us.lectureClass.period }}교시</td>
                         <td style="white-space: nowrap">
                             <!-- <router-link :to="`/lecture/class/${user._object.user.id}/edit/${user.id}`" class="btn btn-sm btn-secondary mr-1">강의세부</router-link> -->
-                            <button @click="takeLectureClass(us.id, us.lectureClass.lecture.name , us.lectureClass.lecture.credit )" class="btn btn-sm btn-primary mr-1" :disabled="us.isDeleting">
+                            <button @click="takeLectureClass(us.lectureClass.id, us.lectureClass.lecture.name , us.lectureClass.lecture.credit )" class="btn btn-sm btn-primary mr-1" :disabled="us.isDeleting">
                                 <span>수강신청</span>
                             </button>
                             <button @click="cartLectureStore.delete(us.id)" class="btn btn-sm btn-danger btn-delete-user" :disabled="us.isDeleting">
