@@ -11,12 +11,12 @@ console.log(user._object.user.id)
 
 
 const name = ref("이름");
-const adminId = ref("학번");
+const studentId = ref("학번");
 
-fetchWrapper.get(`/api/admin/auth/${user._object.user.id}`).then((res) => {
+fetchWrapper.get(`/api/user/auth/${user._object.user.id}`).then((res) => {
     console.log(res);
     name.value = res.name;
-    adminId.value = res.adminId;
+    studentId.value = res.studentId;
 
 });
 
@@ -26,13 +26,9 @@ fetchWrapper.get(`/api/admin/auth/${user._object.user.id}`).then((res) => {
     <div v-if="user">
         <h1>안녕하세요 {{ name }}!</h1>
         <p>구름대학 수강신청에 오신것을 환영합니다.</p>
-        <p><router-link to="/users">test1</router-link></p>
-
-        <td>{{ adminId }}</td>
-                    <td>{{ name }}</td>
-
-                    <p>dsa</p>    
-
+        <p><router-link to="/users">수강신청목록</router-link></p>
+        <p><router-link to="/users">강의목록</router-link></p>
+        <p><router-link to="/users">내정보</router-link></p>
     </div>
 
     
