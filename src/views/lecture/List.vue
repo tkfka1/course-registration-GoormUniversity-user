@@ -301,9 +301,10 @@ function makeList(){
                             <button @click="cartLectureClass(user.id, makeList(), user.lecture.name , user.lecture.credit )" class="btn btn-sm btn-info mr-1" :disabled="user.isDeleting">
                                 <span>장바구니</span>
                             </button>
-                            <button @click="takeLectureClass(user.id, makeList(), user.lecture.name , user.lecture.credit )" class="btn btn-sm btn-primary mr-1" :disabled="user.isDeleting">
+                            <button v-if="(user.lecture.major.id == majorId.valueOf() || user.lecture.major.name == '교양') && user.classMax != user.classPeople" @click="takeLectureClass(user.id, makeList(), user.lecture.name , user.lecture.credit )" class="btn btn-sm btn-primary mr-1" :disabled="user.isDeleting">
                                 <span>수강신청</span>
                             </button>
+                            <button v-else class="btn btn-sm btn-secondary mr-1" disabled>신청불가</button>
                         </td>
                     </tr>
                 </template>

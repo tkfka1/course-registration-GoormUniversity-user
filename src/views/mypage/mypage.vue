@@ -88,6 +88,10 @@ export default {
                     <Field name="name" type="text" class="form-control" :class="{ 'is-invalid': errors.name }" disabled />
                     <div class="invalid-feedback">{{ errors.name }}</div>
                 </div>
+                <div class="form-group col">
+                    <label>학년</label>
+                    <Field name="grade" type="text" class="form-control" disabled />
+                </div>
             </div>
             <div class="form-row">
                 <div class="form-group col">

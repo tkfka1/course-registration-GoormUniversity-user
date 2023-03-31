@@ -20,9 +20,6 @@ cartLectureStore.getAll();
 
 const alertStore = useAlertStore();
 
-console.log(user._object.user.id)
-console.log(typeof(user._object.user.id))
-
 // 내 정보 가져오기
 const myid = ref(0);
 const name = ref("이름");
@@ -31,6 +28,7 @@ const credit = ref(0);
 const haveCredit = ref(0);
 const majorId = ref(0);
 const majorName = ref("");
+const grade = ref(0);
 // 검색 및 필터 초기화
 const searchLectureClassName = ref("");
 const searchLectureClassCredit = ref("");
@@ -46,6 +44,7 @@ function myinfo(){
     haveCredit.value = res.haveCredit;
     majorId.value = res.major.id;
     majorName.value = res.major.name;
+    grade.value = res.grade;
     });
 }
 myinfo()
@@ -194,13 +193,9 @@ function makeList(){
 </script>
 
 
-
-
-
-
 <template>
     <div class="form-row">
-        <h3>{{ name }} ({{ majorName }})  학번 : {{ studentId }}</h3>
+        <h3>{{ name }} ({{ majorName }} {{ grade }}학년)</h3>
     </div>
     <div class="form-row">
     <h3>최대학점 : {{ credit }}  수강학점 : {{ haveCredit }}</h3>
@@ -320,9 +315,10 @@ function makeList(){
                         <td>{{ makeweek(us.lectureClass.week) }} / {{ us.lectureClass.period }}교시</td>
                         <td style="white-space: nowrap">
                             <!-- <router-link :to="`/lecture/class/${user._object.user.id}/edit/${user.id}`" class="btn btn-sm btn-secondary mr-1">강의세부</router-link> -->
-                            <button @click="takeLectureClass(us.lectureClass.id, us.lectureClass.lecture.name , us.lectureClass.lecture.credit )" class="btn btn-sm btn-primary mr-1" :disabled="us.isDeleting">
+                            <button v-if="(us.lectureClass.lecture.major.id == majorId.valueOf() || us.lectureClass.lecture.major.name == '교양') && us.classMax != us.classPeople" @click="takeLectureClass(us.lectureClass.id, us.lectureClass.lecture.name , us.lectureClass.lecture.credit )" class="btn btn-sm btn-primary mr-1" :disabled="us.isDeleting">
                                 <span>수강신청</span>
                             </button>
+                            <button v-else class="btn btn-sm btn-secondary mr-1" disabled>신청불가</button>
                             <button @click="cartLectureStore.delete(us.id)" class="btn btn-sm btn-danger btn-delete-user" :disabled="us.isDeleting">
                             <span v-if="cart.isDeleting" class="spinner-border spinner-border-sm"></span>
                             <span v-else>삭제</span>
