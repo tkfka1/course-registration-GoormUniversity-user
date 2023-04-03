@@ -12,6 +12,8 @@ const authStore = useAuthStore();
 const { user } = storeToRefs(authStore);
 
 const takeLectureStore = useTakeLectureStore();
+const { takeLecture } = storeToRefs(takeLectureStore);
+takeLectureStore.getAll();
 const cartLectureStore = useCartLectureStore();
 const lectureClassStore = useLectureClassStore();
 const { lectureClass } = storeToRefs(lectureClassStore);
@@ -61,9 +63,22 @@ async function takeLectureClass(id, lid, name, cred) {
         alertStore.error("학점이 부족합니다.");
         return;
     }
-
+    var temp = 0;
     //같은 강의 다른교수
-
+    await fetchWrapper.get(`/api/take/auth/`).then((res) => {
+        console.log(res);
+        console.log(name)
+        for (var i = 0; i < res.length; i++) {
+            if (res[i].lectureClass.lecture.name == name) {
+                alertStore.error("다른 분반으로 수강신청이 되어있는 강의입니다.");
+                temp = 1;
+                return;
+            }
+        }
+    });
+    if (temp == 1){
+        return;
+    }
 
     // 인원꽉참
     try {
@@ -90,7 +105,7 @@ async function cartLectureClass(id, lid, name, cred) {
     data.user = user;
     data.credit = cred;
 
-    //같은 강의 다른교수
+
 
     try {
         await cartLectureStore.register(data);
@@ -219,7 +234,7 @@ function findKeyWord(name) {
 
 // 페이지네이션
 
-let itemsPerPage = 3;
+let itemsPerPage = 10;
 let currentPage = 1;
 
 
@@ -300,6 +315,7 @@ let isVisible = ref(false);
     <div class="form-row">
         <h3>최대학점 : {{ credit }} 수강학점 : {{ haveCredit }}</h3>
     </div>
+    
 
     <br>
     <div class="form-row">
