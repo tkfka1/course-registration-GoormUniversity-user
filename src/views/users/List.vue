@@ -228,6 +228,60 @@ function makeList(){
                         <td>{{ makeweek(us.lectureClass.week) }} / {{ us.lectureClass.period }}교시</td>
                         <td style="white-space: nowrap">
                             <!-- <router-link :to="`/users/take/${us.id}`" class="btn btn-sm btn-secondary mr-1">강의세부</router-link> -->
+                            <button @click="openModal(us.id)" class="btn btn-sm btn-secondary mr-1">강의세부</button>
+                        <!-- 컴포넌트 MyModal -->
+                        <MyModal @close="closeModal(us.id)" v-if="modalEx == us.id">
+                            <!-- default 슬롯 콘텐츠 -->
+                            <div class="modal-header">
+                                <h5 class="modal-title">{{ us.lectureClass.lecture.name }}</h5>
+                            </div>
+                            <div class="modal-body">
+
+                                <div class="form-row">
+                                    <div class="input-group col-6">
+                                    <span class="input-group-text" id="basic-addon1">전공</span>
+                                    <span type="text" class="form-control">{{ us.lectureClass.lecture.major.name }}</span>
+                                    </div>
+                                    <div class="input-group col-6">
+                                    <span class="input-group-text" id="basic-addon1">교수</span>
+                                    <span type="text" class="form-control">{{ us.lectureClass.professor.name }}</span>
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="input-group col-6">
+                                    <span class="input-group-text" id="basic-addon1">학점</span>
+                                    <span type="text" class="form-control">{{ us.lectureClass.lecture.credit }}</span>
+                                    </div>
+                                    <div class="input-group col-6">
+                                    <span class="input-group-text" id="basic-addon1">교시</span>
+                                    <span type="text" class="form-control">{{ makeweek(us.lectureClass.week) }} / {{ us.lectureClass.period }}교시</span>
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="input-group col-6">
+                                    <span class="input-group-text" id="basic-addon1">최소인원</span>
+                                    <span type="text" class="form-control">{{ us.lectureClass.classMin }}</span>
+                                    </div>
+                                    <div class="input-group col-6">
+                                    <span class="input-group-text" id="basic-addon1">인원</span>
+                                    <span type="text" class="form-control">{{ us.lectureClass.classPeople }} / {{ us.lectureClass.classMax }}</span>
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="input-group col-12">　　　　　　　　　　　　　　　　　　　　　　　　</div>
+                                </div>
+                                
+                                <p>{{ us.lectureClass.explanation}}</p>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" @click="closeModal"
+                                    data-bs-dismiss="modal">Close</button>
+                                <!-- <button type="button" class="btn btn-primary">Save changes</button> -->
+                            </div>
+                            <!-- /default -->
+                            <!-- footer 슬롯 콘텐츠 -->
+                            <!-- /footer -->
+                        </MyModal>
                             <button @click="delLectureClass(us.id)" class="btn btn-sm btn-danger mr-1" :disabled="user.isDeleting">
                                 <span v-if="user.isDeleting" class="spinner-border spinner-border-sm"></span>
                                 <span v-else>수강취소</span>
@@ -336,3 +390,36 @@ function makeList(){
 
 
 </template>
+
+
+<script>
+import MyModal from './MyModal.vue'
+export default {
+    components: { MyModal },
+    data() {
+        return {
+            modalEx: 0,
+            message: ''
+        }
+    },
+    methods: {
+        openModal(num) {
+            this.modalEx = num
+
+        },
+        closeModal(num) {
+            this.modalEx = 0
+
+        },
+        doSend() {
+            if (this.message.length > 0) {
+                alert(this.message)
+                this.message = ''
+                this.closeModal()
+            } else {
+                alert('메시지를 입력해주세요.')
+            }
+        }
+    }
+}
+</script>

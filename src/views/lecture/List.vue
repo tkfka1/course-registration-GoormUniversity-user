@@ -1,10 +1,11 @@
 <script setup>
 import { storeToRefs } from 'pinia';
 import { useRoute } from 'vue-router';
-import { useLectureClassStore , useAlertStore , useAuthStore , useTakeLectureStore , useCartLectureStore} from '@/stores';
+import { useLectureClassStore, useAlertStore, useAuthStore, useTakeLectureStore, useCartLectureStore } from '@/stores';
 import { fetchWrapper } from '@/helpers';
 import { ref } from 'vue';
 import { number } from 'yup';
+import { Modal } from 'usemodal-vue3';
 
 // 내 id 가져오기 user._object.user.id
 const authStore = useAuthStore();
@@ -32,21 +33,21 @@ const searchLectureClassCredit = ref("");
 const searchLectureClassWeek = ref("");
 const searchLectureClassMajor = ref("");
 
-function myinfo(){
+function myinfo() {
     fetchWrapper.get(`/api/user/auth/${user._object.user.id}`).then((res) => {
-    myid.value = res.id;
-    name.value = res.name;
-    studentId.value = res.studentId;
-    credit.value = res.credit;
-    haveCredit.value = res.haveCredit;
-    majorId.value = res.major.id;
-    majorName.value = res.major.name;
+        myid.value = res.id;
+        name.value = res.name;
+        studentId.value = res.studentId;
+        credit.value = res.credit;
+        haveCredit.value = res.haveCredit;
+        majorId.value = res.major.id;
+        majorName.value = res.major.name;
     });
 }
 myinfo()
 
 
-async function takeLectureClass(id,lid,name,cred) {
+async function takeLectureClass(id, lid, name, cred) {
     var data = new Object();
     var lectureClass = new Object();
     var user = new Object();
@@ -56,7 +57,7 @@ async function takeLectureClass(id,lid,name,cred) {
     data.user = user;
     data.credit = cred;
 
-    if(credit.value < haveCredit.value + cred){
+    if (credit.value < haveCredit.value + cred) {
         alertStore.error("학점이 부족합니다.");
         return;
     }
@@ -67,11 +68,11 @@ async function takeLectureClass(id,lid,name,cred) {
     // 인원꽉참
     try {
         await takeLectureStore.register(data);
-        alertStore.success( name + ' 수강신청 등록 완료');
+        alertStore.success(name + ' 수강신청 등록 완료');
     } catch (error) {
-        if(error == "500"){
+        if (error == "500") {
             alertStore.error("이미 수강신청이 되어있는 강의입니다.");
-        }else{
+        } else {
             alertStore.error(error);
         }
     }
@@ -79,7 +80,7 @@ async function takeLectureClass(id,lid,name,cred) {
     myinfo();
 }
 
-async function cartLectureClass(id,lid,name,cred) {
+async function cartLectureClass(id, lid, name, cred) {
     var data = new Object();
     var lectureClass = new Object();
     var user = new Object();
@@ -93,11 +94,11 @@ async function cartLectureClass(id,lid,name,cred) {
 
     try {
         await cartLectureStore.register(data);
-        alertStore.success( name + ' 장바구니 등록 완료');
+        alertStore.success(name + ' 장바구니 등록 완료');
     } catch (error) {
-        if(error == "500"){
+        if (error == "500") {
             alertStore.error("이미 장바구니에 있는 강의입니다");
-        }else{
+        } else {
             alertStore.error(error);
         }
     }
@@ -114,29 +115,31 @@ async function delLectureClass(id) {
     alertStore.success('수강 삭제 완료');
 }
 
-function makeweek(week){
-    if(week == 1){
+function makeweek(week) {
+    if (week == 1) {
         return "월";
-    }else if(week == 2){
+    } else if (week == 2) {
         return "화";
-    }else if(week == 3){
+    } else if (week == 3) {
         return "수";
-    }else if(week == 4){
+    } else if (week == 4) {
         return "목";
-    }else if(week == 5){
+    } else if (week == 5) {
         return "금";
-    }else if(week == 6){
+    } else if (week == 6) {
         return "토";
-    }else if(week == 7){
+    } else if (week == 7) {
         return "일";
     }
 }
 
 
+// 필터링
 
-function searchLectureClassBTN(){
+function searchLectureClassBTN() {
+    currentPage = 1;
     searchLectureClassName.value = document.getElementById("searchTakeLectureId").value;
-    if (searchLectureClassName.value == ""){
+    if (searchLectureClassName.value == "") {
         return;
     }
     lectureClassStore.getAll();
@@ -144,76 +147,145 @@ function searchLectureClassBTN(){
 
 
 
-function changeSelectCredit(event){
+function changeSelectCredit(event) {
+    currentPage = 1;
     searchLectureClassCredit.value = event.target.value;
     lectureClassStore.getAll();
 }
 
-function findCredit(credit){
-    if (searchLectureClassCredit.value == ""){
+function findCredit(credit) {
+    if (searchLectureClassCredit.value == "") {
         return true;
     }
-    if(credit == searchLectureClassCredit.value){
+    if (credit == searchLectureClassCredit.value) {
         return true;
-    }else{
+    } else {
         return false;
     }
 }
 
-function changeSelectMajor(event){
-    if (event.target.value == "1"){
+function changeSelectMajor(event) {
+    currentPage = 1;
+    if (event.target.value == "1") {
         searchLectureClassMajor.value = majorName.value;
     }
-    else if (event.target.value == "2"){
+    else if (event.target.value == "2") {
         searchLectureClassMajor.value = "교양";
-    }else{
+    } else {
         searchLectureClassMajor.value = "";
     }
     lectureClassStore.getAll();
 }
 
-function findMajorName(majorId){
-    if (searchLectureClassMajor.value == ""){
+function findMajorName(majorId) {
+    if (searchLectureClassMajor.value == "") {
         return true;
     }
-    if(majorId == searchLectureClassMajor.value){
+    if (majorId == searchLectureClassMajor.value) {
         return true;
-    }else{
+    } else {
         return false;
     }
 }
 
-function changeSelectWeek(event){
+function changeSelectWeek(event) {
+    currentPage = 1;
     searchLectureClassWeek.value = event.target.value;
     lectureClassStore.getAll();
 
 }
 
-function findWeek(week){
-    if (searchLectureClassWeek.value == ""){
+function findWeek(week) {
+    if (searchLectureClassWeek.value == "") {
         return true;
     }
-    if(week == searchLectureClassWeek.value){
+    if (week == searchLectureClassWeek.value) {
         return true;
-    }else{
+    } else {
         return false;
     }
 }
 
-function findKeyWord(name){
-    if (searchLectureClassName.value == ""){
+function findKeyWord(name) {
+    if (searchLectureClassName.value == "") {
         return true;
     }
-    if(name.indexOf(searchLectureClassName.value) != -1){
+    if (name.indexOf(searchLectureClassName.value) != -1) {
         return true;
-    }else{
+    } else {
         return false;
     }
 }
 
-function makeList(){
-    return user._object.user.id;
+// 페이지네이션
+
+let itemsPerPage = 3;
+let currentPage = 1;
+
+
+const pageCount = ref(0)
+
+function pageCountCheck(li) {
+    // console.log("pageCount")
+    pageCount.value = Math.ceil(li.length / itemsPerPage)
 }
+
+function nextPage() {
+    // console.log("next")
+    if (currentPage < pageCount.value) {
+        currentPage++
+    }
+    lectureClassStore.getAll();
+}
+
+function prevPage() {
+    // console.log("prev")
+    if (currentPage > 1) {
+        currentPage--
+    }
+    lectureClassStore.getAll();
+}
+
+function changePage(page) {
+    // console.log("change")
+    currentPage = page
+    lectureClassStore.getAll();
+}
+
+function returnPage(page) {
+    // console.log(currentPage,page)
+    if (page == currentPage) {
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+
+function listItem(li) {
+    let temp = []
+    for (const key in li) {
+        // console.log(li[key].lecture.name);
+        // 강의 이름
+        //li[key].lecture.name
+        //findCredit(l.lecture.credit) && findWeek(l.week) && findMajorName(l.lecture.major.name) && findKeyWord(l.lecture.name) )
+        if (findCredit(li[key].lecture.credit) && findWeek(li[key].week) && findMajorName(li[key].lecture.major.name) && findKeyWord(li[key].lecture.name)) {
+            temp.push(li[key])
+        }
+
+    }
+    pageCountCheck(temp)
+    // console.log(temp)
+
+    const startIndex = (currentPage - 1) * itemsPerPage
+    const endIndex = startIndex + itemsPerPage
+    return temp.slice(startIndex, endIndex)
+}
+
+
+
+// show modal
+let isVisible = ref(false);
 
 </script>
 
@@ -221,22 +293,21 @@ function makeList(){
 
 
 
-
 <template>
     <div class="form-row">
-        <h3>{{ name }} ({{ majorName }})  학번 : {{ studentId }}</h3>
+        <h3>{{ name }} ({{ majorName }}) 학번 : {{ studentId }}</h3>
     </div>
     <div class="form-row">
-    <h3>최대학점 : {{ credit }}  수강학점 : {{ haveCredit }}</h3>
+        <h3>최대학점 : {{ credit }} 수강학점 : {{ haveCredit }}</h3>
     </div>
-    
+
     <br>
     <div class="form-row">
         <div class="form-group col">
             <h4 style="">수강 가능 목록</h4>
         </div>
         <div class="form-group col">
-            <select class="custom-select" @change="changeSelectCredit($event)" >
+            <select class="custom-select" @change="changeSelectCredit($event)">
                 <option value="" selected>학점</option>
                 <option value="1">1</option>
                 <option value="2">2</option>
@@ -246,7 +317,7 @@ function makeList(){
             </select>
         </div>
         <div class="form-group col">
-            <select class="custom-select" @change="changeSelectWeek($event)" >
+            <select class="custom-select" @change="changeSelectWeek($event)">
                 <option value="" selected>전체요일</option>
                 <option value="1">월</option>
                 <option value="2">화</option>
@@ -258,7 +329,7 @@ function makeList(){
             </select>
         </div>
         <div class="form-group col">
-            <select class="custom-select" @change="changeSelectMajor($event)" >
+            <select class="custom-select" @change="changeSelectMajor($event)">
                 <option value="" selected>전공/교양</option>
                 <option value="1">전공</option>
                 <option value="2">교양</option>
@@ -268,7 +339,7 @@ function makeList(){
             <input type="text" class="form-control" id="searchTakeLectureId" placeholder="강의 이름 검색">
         </div>
         <div class="form-group col-md-1 ">
-            
+
             <button type="button" class="btn btn-success" @click="searchLectureClassBTN">검색</button>
         </div>
     </div>
@@ -285,36 +356,133 @@ function makeList(){
                 <th style="width: 1%"></th>
             </tr>
         </thead>
+
         <tbody>
-                <template v-if="lectureClass.length">
-                    <tr v-for="user in lectureClass.filter((l) => findCredit(l.lecture.credit) && findWeek(l.week) && findMajorName(l.lecture.major.name) && findKeyWord(l.lecture.name) )" :key="user.id" >
-                        <td>{{ user.lecture.name }}</td>
-                        <td>{{ user.lecture.major.name }}</td>
-                        <td>{{ user.professor.name }}</td>
-                        <td>{{ user.lecture.credit }}</td>
-                        <td>{{ user.classPeople }} / {{ user.classMax }}</td>
-                        <td>{{ makeweek(user.week) }} / {{ user.period }}교시</td>
-                        <td style="white-space: nowrap">
-                            <button @click="takeLectureClass(user.id, makeList(), user.lecture.name , user.lecture.credit )" class="btn btn-sm btn-secondary mr-1" :disabled="user.isDeleting">
-                                <span>강의세부</span>
-                            </button>
-                            <button @click="cartLectureClass(user.id, makeList(), user.lecture.name , user.lecture.credit )" class="btn btn-sm btn-info mr-1" :disabled="user.isDeleting">
-                                <span>장바구니</span>
-                            </button>
-                            <button v-if="(user.lecture.major.id == majorId.valueOf() || user.lecture.major.name == '교양') && user.classMax != user.classPeople" @click="takeLectureClass(user.id, makeList(), user.lecture.name , user.lecture.credit )" class="btn btn-sm btn-primary mr-1" :disabled="user.isDeleting">
-                                <span>수강신청</span>
-                            </button>
-                            <button v-else class="btn btn-sm btn-secondary mr-1" disabled>신청불가</button>
-                        </td>
-                    </tr>
-                </template>
-            <tr v-if="lectureClass.loading">
-                <td colspan="4" class="text-center">
-                    <span class="spinner-border spinner-border-lg align-center"></span>
-                </td>
-            </tr>        
+            <template v-if="lectureClass.length">
+                <tr v-for="item in listItem(lectureClass)" :key="item.id">
+                    <td>{{ item.lecture.name }}</td>
+                    <td>{{ item.lecture.major.name }}</td>
+                    <td>{{ item.professor.name }}</td>
+                    <td>{{ item.lecture.credit }}</td>
+                    <td>{{ item.classPeople }} / {{ item.classMax }}</td>
+                    <td>{{ makeweek(item.week) }} / {{ item.period }}교시</td>
+                    <td style="white-space: nowrap">
+                        <button @click="openModal(item.id)" class="btn btn-sm btn-secondary mr-1">강의세부</button>
+                        <!-- 컴포넌트 MyModal -->
+                        <MyModal @close="closeModal(item.id)" v-if="modalEx == item.id">
+                            <!-- default 슬롯 콘텐츠 -->
+                            <div class="modal-header">
+                                <h5 class="modal-title">{{ item.lecture.name }}</h5>
+                            </div>
+                            <div class="modal-body">
+
+                                <div class="form-row">
+                                    <div class="input-group col-6">
+                                        <span class="input-group-text" id="basic-addon1">전공</span>
+                                        <span type="text" class="form-control">{{ item.lecture.major.name }}</span>
+                                    </div>
+                                    <div class="input-group col-6">
+                                        <span class="input-group-text" id="basic-addon1">교수</span>
+                                        <span type="text" class="form-control">{{ item.professor.name }}</span>
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="input-group col-6">
+                                        <span class="input-group-text" id="basic-addon1">학점</span>
+                                        <span type="text" class="form-control">{{ item.lecture.credit }}</span>
+                                    </div>
+                                    <div class="input-group col-6">
+                                        <span class="input-group-text" id="basic-addon1">교시</span>
+                                        <span type="text" class="form-control">{{ makeweek(item.week) }} / {{ item.period
+                                        }}교시</span>
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="input-group col-6">
+                                        <span class="input-group-text" id="basic-addon1">최소인원</span>
+                                        <span type="text" class="form-control">{{ item.classMin }}</span>
+                                    </div>
+                                    <div class="input-group col-6">
+                                        <span class="input-group-text" id="basic-addon1">인원</span>
+                                        <span type="text" class="form-control">{{ item.classPeople }} / {{ item.classMax
+                                        }}</span>
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="input-group col-12">　　　　　　　　　　　　　　　　　　　　　　　　</div>
+                                </div>
+
+                                <p>{{ item.explanation }}</p>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" @click="closeModal"
+                                    data-bs-dismiss="modal">Close</button>
+                                <!-- <button type="button" class="btn btn-primary">Save changes</button> -->
+                            </div>
+                            <!-- /default -->
+                            <!-- footer 슬롯 콘텐츠 -->
+                            <!-- /footer -->
+                        </MyModal>
+                        <button @click="cartLectureClass(item.id, myid, item.lecture.name, item.lecture.credit)"
+                            class="btn btn-sm btn-info mr-1">
+                            <span>장바구니</span>
+                        </button>
+                        <button
+                            v-if="(item.lecture.major.id == majorId.valueOf() || item.lecture.major.name == '교양') && item.classMax != item.classPeople"
+                            @click="takeLectureClass(item.id, myid, item.lecture.name, item.lecture.credit)"
+                            class="btn btn-sm btn-primary mr-1" :disabled="item.isDeleting">
+                            <span>수강신청</span>
+                        </button>
+                        <button v-else class="btn btn-sm btn-secondary mr-1" disabled>신청불가</button>
+                    </td>
+                </tr>
+
+            </template>
         </tbody>
     </table>
-
-
+    <template v-if="lectureClass.length">
+        <div style="display: flex; flex-flow: row nowrap; justify-content: center;">
+            <ui class="pagination">
+                <li class="page-item"><button class="page-link" :disabled="currentPage === 1"
+                        @click="prevPage">Prev</button></li>
+                <li v-for="page in pageCount" :key="page" class="page-item" :class="{ active: returnPage(page) }">
+                    <button class="page-link" @click="changePage(page)">{{ page }}</button>
+                </li>
+                <li class="page-item"><button class="page-link" :disabled="currentPage === pageCount"
+                        @click="nextPage">Next</button></li>
+            </ui>
+        </div>
+    </template>
 </template>
+
+<script>
+import MyModal from './MyModal.vue'
+export default {
+    components: { MyModal },
+    data() {
+        return {
+            modalEx: 0,
+            message: ''
+        }
+    },
+    methods: {
+        openModal(num) {
+            this.modalEx = num
+
+        },
+        closeModal(num) {
+            this.modalEx = 0
+
+        },
+        doSend() {
+            if (this.message.length > 0) {
+                alert(this.message)
+                this.message = ''
+                this.closeModal()
+            } else {
+                alert('메시지를 입력해주세요.')
+            }
+        }
+    }
+}
+</script>
