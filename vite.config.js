@@ -17,6 +17,10 @@ export default defineConfig({
           target: "http://localhost:8080/api/",
           rewrite: (path)=>path.replace(/^\/api/,""),
         },
+        "/mlapp":{ 
+          target: "http://127.0.0.1:5000/mlapp/",
+          rewrite: (path)=>path.replace(/^\/mlapp/,""),
+        },
       }
     }
 });

@@ -30,7 +30,7 @@ fetchWrapper.get(`/api/user/auth/${user._object.user.id}`).then((res) => {
         <p><router-link to="/users">수강신청목록</router-link></p>
         <p><router-link to="/lecture">강의목록</router-link></p>
         <p><router-link to="/mypage">내정보</router-link></p>
-        <p><router-link to="/app">관련영상</router-link></p>
+        <p><router-link to="/app">동물판독기</router-link></p>
 
 </template>
 
