@@ -26,6 +26,7 @@ const myid = ref(0);
 const name = ref("이름");
 const studentId = ref("학번");
 const credit = ref(0);
+const grade = ref(0);
 const haveCredit = ref(0);
 const majorId = ref(0);
 const majorName = ref("");
@@ -34,6 +35,11 @@ const searchLectureClassName = ref("");
 const searchLectureClassCredit = ref("");
 const searchLectureClassWeek = ref("");
 const searchLectureClassMajor = ref("");
+// 시간 초기화
+const onMarket = ref(0);
+const startTime = ref("");
+const endTime = ref("");
+
 
 function myinfo() {
     fetchWrapper.get(`/api/user/auth/${user._object.user.id}`).then((res) => {
@@ -44,10 +50,36 @@ function myinfo() {
         haveCredit.value = res.haveCredit;
         majorId.value = res.major.id;
         majorName.value = res.major.name;
+        grade.value = res.grade;
     });
 }
 myinfo()
 
+// time 가져오기
+async function timeinfo() {
+
+    var date = new Date();
+    await fetchWrapper.get(`/api/time/auth/`).then((res) => {
+        for (var i = 0; i < res.length; i++) {
+
+            if (Number(Date.parse(res[i].startTime))-Number(Date.parse(date)) < 0) {
+                if (Number(Date.parse(res[i].endTime))-Number(Date.parse(date)) < 0) {
+                    return;
+                }else
+                    startTime.value = res[i].startTime;
+                    endTime.value = res[i].endTime;
+                    onMarket.value = Date.parse(res[i].endTime)-Date.parse(date);
+                    return;
+            }else{
+                onMarket.value = 0;
+                startTime.value = res[0].startTime;
+                endTime.value = res[0].endTime;
+            }
+        }
+    });
+}
+
+timeinfo()
 
 async function takeLectureClass(id, lid, name, cred) {
     var data = new Object();
@@ -76,7 +108,7 @@ async function takeLectureClass(id, lid, name, cred) {
             }
         }
     });
-    if (temp == 1){
+    if (temp == 1) {
         return;
     }
 
@@ -298,9 +330,24 @@ function listItem(li) {
 }
 
 
+//time
+function msToTime(duration) {
+        var seconds = parseInt((duration/1000)%60)
+            , minutes = parseInt((duration/(1000*60))%60)
+            , hours = parseInt((duration/(1000*60*60))%24);
 
-// show modal
-let isVisible = ref(false);
+        hours = (hours < 10) ? "0" + hours : hours;
+        minutes = (minutes < 10) ? "0" + minutes : minutes;
+        seconds = (seconds < 10) ? "0" + seconds : seconds;
+
+        return hours + "시간" + minutes + "분" + seconds + "초";
+    }
+
+
+setInterval(function(){
+//  console.log("time")
+ timeinfo();
+}, 1000)
 
 </script>
 
@@ -310,12 +357,68 @@ let isVisible = ref(false);
 
 <template>
     <div class="form-row">
-        <h3>{{ name }} ({{ majorName }}) 학번 : {{ studentId }}</h3>
+
+
+        <table class="table col-4">
+            <thead>
+                <tr>
+                    <th>이름</th>
+                    <th>전공</th>
+                    <th>학년</th>
+                    <th>학점</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>{{ name }}</td>
+                    <td>{{ majorName }}</td>
+                    <td>{{ grade }}학년</td>
+                    <td>{{ credit }}</td>
+                </tr>
+            </tbody>
+
+        </table>
+        <div class="col-4">
+            <br>
+            <h1>　 수강학점 : {{ haveCredit }} </h1>
+        </div>
+        <div v-if="onMarket > 0"  class="col-4">
+            <div class="input-group mb-4">
+                <div class="input-group-prepend">
+                <div class="input-group-text">남은시간</div>
+                </div>
+                <div type="text" class="form-control">{{ msToTime(onMarket) }}</div>
+            </div>
+            <div class="input-group mb-4">
+                <div class="input-group-prepend">
+                <div class="input-group-text">종료시간</div>
+                </div>
+                <div type="text" class="form-control">{{ endTime.replace("T"," ").slice(5,16) }}</div>
+            </div>
+        </div>
+        <div v-else class="col-4">
+            <div class="input-group mb-4">
+                <div class="input-group-prepend">
+                <div class="input-group-text">오픈시간</div>
+                </div>
+                <div type="text" class="form-control">{{ startTime.replace("T"," ").slice(5,16) }}</div>
+            </div>
+            <div class="input-group mb-4">
+                <div class="input-group-prepend">
+                <div class="input-group-text">종료시간</div>
+                </div>
+                <div type="text" class="form-control">{{ endTime.replace("T"," ").slice(5,16) }}</div>
+            </div>
+        </div>
     </div>
+
+
+    <br>
     <div class="form-row">
-        <h3>최대학점 : {{ credit }} 수강학점 : {{ haveCredit }}</h3>
+        <div class="form-group col">
+            <h4 style="">수강 목록</h4>
+        </div>
     </div>
-    
 
     <br>
     <div class="form-row">
@@ -444,7 +547,7 @@ let isVisible = ref(false);
                             <span>장바구니</span>
                         </button>
                         <button
-                            v-if="(item.lecture.major.id == majorId.valueOf() || item.lecture.major.name == '교양') && item.classMax != item.classPeople"
+                            v-if="(item.lecture.major.id == majorId.valueOf() || item.lecture.major.name == '교양') && item.classMax != item.classPeople && onMarket > 0"
                             @click="takeLectureClass(item.id, myid, item.lecture.name, item.lecture.credit)"
                             class="btn btn-sm btn-primary mr-1" :disabled="item.isDeleting">
                             <span>수강신청</span>

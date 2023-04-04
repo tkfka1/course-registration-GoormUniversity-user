@@ -34,6 +34,11 @@ const searchLectureClassName = ref("");
 const searchLectureClassCredit = ref("");
 const searchLectureClassWeek = ref("");
 const searchLectureClassMajor = ref("");
+// 시간 초기화
+const onMarket = ref(0);
+const startTime = ref("");
+const endTime = ref("");
+
 
 function myinfo() {
     fetchWrapper.get(`/api/user/auth/${user._object.user.id}`).then((res) => {
@@ -49,6 +54,31 @@ function myinfo() {
 }
 myinfo()
 
+// time 가져오기
+async function timeinfo() {
+
+var date = new Date();
+await fetchWrapper.get(`/api/time/auth/`).then((res) => {
+    for (var i = 0; i < res.length; i++) {
+
+        if (Number(Date.parse(res[i].startTime))-Number(Date.parse(date)) < 0) {
+            if (Number(Date.parse(res[i].endTime))-Number(Date.parse(date)) < 0) {
+                return;
+            }else
+                startTime.value = res[i].startTime;
+                endTime.value = res[i].endTime;
+                onMarket.value = Date.parse(res[i].endTime)-Date.parse(date);
+                return;
+        }else{
+            onMarket.value = 0;
+            startTime.value = res[0].startTime;
+            endTime.value = res[0].endTime;
+        }
+    }
+});
+}
+
+timeinfo()
 
 async function takeLectureClass(id, name, cred) {
     var data = new Object();
@@ -211,36 +241,86 @@ function makeList() {
     return user._object.user.id;
 }
 
-</script>
 
+//time
+function msToTime(duration) {
+        var seconds = parseInt((duration/1000)%60)
+            , minutes = parseInt((duration/(1000*60))%60)
+            , hours = parseInt((duration/(1000*60*60))%24);
+
+        hours = (hours < 10) ? "0" + hours : hours;
+        minutes = (minutes < 10) ? "0" + minutes : minutes;
+        seconds = (seconds < 10) ? "0" + seconds : seconds;
+
+        return hours + "시간" + minutes + "분" + seconds + "초";
+    }
+
+
+setInterval(function(){
+//  console.log("time")
+ timeinfo();
+}, 1000)
+
+
+
+
+</script>
 
 <template>
     <div class="form-row">
 
-    
-    <table class="table col-6">
-        <thead>
-            <tr>
-                <th>이름</th>
-                <th>전공</th>
-                <th>학년</th>
-                <th>학점</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td>{{ name }}</td>
-                <td>{{ majorName }}</td>
-                <td>{{ grade }}학년</td>
-                <td>{{ credit }}</td>
-            </tr>
-        </tbody>
 
-    </table>
-    <div class="col-6">
-        <br>
-        <h1>　　　수강학점 : {{ haveCredit }}</h1>
+<table class="table col-4">
+    <thead>
+        <tr>
+            <th>이름</th>
+            <th>전공</th>
+            <th>학년</th>
+            <th>학점</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>{{ name }}</td>
+            <td>{{ majorName }}</td>
+            <td>{{ grade }}학년</td>
+            <td>{{ credit }}</td>
+        </tr>
+    </tbody>
+
+</table>
+<div class="col-4">
+    <br>
+    <h1>　 수강학점 : {{ haveCredit }} </h1>
+</div>
+<div v-if="onMarket > 0"  class="col-4">
+    <div class="input-group mb-4">
+        <div class="input-group-prepend">
+        <div class="input-group-text">남은시간</div>
+        </div>
+        <div type="text" class="form-control">{{ msToTime(onMarket) }}</div>
     </div>
+    <div class="input-group mb-4">
+        <div class="input-group-prepend">
+        <div class="input-group-text">종료시간</div>
+        </div>
+        <div type="text" class="form-control">{{ endTime.replace("T"," ").slice(5,16) }}</div>
+    </div>
+</div>
+<div v-else class="col-4">
+    <div class="input-group mb-4">
+        <div class="input-group-prepend">
+        <div class="input-group-text">오픈시간</div>
+        </div>
+        <div type="text" class="form-control">{{ startTime.replace("T"," ").slice(5,16) }}</div>
+    </div>
+    <div class="input-group mb-4">
+        <div class="input-group-prepend">
+        <div class="input-group-text">종료시간</div>
+        </div>
+        <div type="text" class="form-control">{{ endTime.replace("T"," ").slice(5,16) }}</div>
+    </div>
+</div>
 </div>
 
 
@@ -420,7 +500,7 @@ function makeList() {
                     <td style="white-space: nowrap">
                         <!-- <router-link :to="`/lecture/class/${user._object.user.id}/edit/${user.id}`" class="btn btn-sm btn-secondary mr-1">강의세부</router-link> -->
                         <button
-                            v-if="(us.lectureClass.lecture.major.id == majorId.valueOf() || us.lectureClass.lecture.major.name == '교양') && us.lectureClass.classMax != us.lectureClass.classPeople"
+                            v-if="(us.lectureClass.lecture.major.id == majorId.valueOf() || us.lectureClass.lecture.major.name == '교양') && us.lectureClass.classMax != us.lectureClass.classPeople && onMarket > 0"
                             @click="takeLectureClass(us.lectureClass.id, us.lectureClass.lecture.name, us.lectureClass.lecture.credit)"
                             class="btn btn-sm btn-primary mr-1" :disabled="us.isDeleting">
                             <span>수강신청</span>
