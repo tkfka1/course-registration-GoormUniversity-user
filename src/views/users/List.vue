@@ -254,19 +254,44 @@ function makeList() {
 function msToTime(duration) {
     var seconds = parseInt((duration / 1000) % 60)
         , minutes = parseInt((duration / (1000 * 60)) % 60)
-        , hours = parseInt((duration / (1000 * 60 * 60)) % 24);
+        , hours = parseInt((duration / (1000 * 60 * 60)) % 24)
+        , days = parseInt((duration / (1000 * 60 * 60 * 24)) % 24);
 
+    days = (days < 10) ? "0" + days : days;
     hours = (hours < 10) ? "0" + hours : hours;
     minutes = (minutes < 10) ? "0" + minutes : minutes;
     seconds = (seconds < 10) ? "0" + seconds : seconds;
 
-    return hours + "시간" + minutes + "분" + seconds + "초";
+
+    return days + "일 " + hours + "시간 " + minutes + "분 " + seconds + "초";
 }
 
 
 setInterval(function () {
     //  console.log("time")
-    timeinfo();
+    // console.log(onMarket.value)
+    // console.log(offMarket.value)
+    // console.log(startTime.value)
+    // console.log(endTime.value)
+    // console.log(Date.parse(endTime.value))
+
+    if (offMarket.value == 0) {
+        var now = new Date();
+        if (endTime.value != "") {
+            onMarket.value = Date.parse(endTime.value) - Date.parse(now);
+            if (onMarket.value <= 0) {
+                console.log("수강신청 끝")
+                timeinfo();
+            }
+        }
+    } else {
+        var now = new Date();
+        offMarket.value = Date.parse(startTime.value) - Date.parse(now);
+        if (offMarket.value <= 0) {
+            console.log("수강신청 시간")
+            timeinfo();
+        }
+    }
 }, 1000)
 
 
@@ -297,7 +322,7 @@ setInterval(function () {
             </tbody>
 
         </table>
-        <div class="col-4">
+        <div v-if="onMarket <= 0" class="col-4">
             <div class="input-group mb-4">
                 <div class="input-group-prepend">
                     <div class="input-group-text">수강학점</div>
@@ -309,6 +334,12 @@ setInterval(function () {
                     <div class="input-group-text">남은시간</div>
                 </div>
                 <div type="text" class="form-control">{{ msToTime(offMarket) }}</div>
+            </div>
+        </div>
+        <div v-else class="col-4">
+            <br>
+            <div class="input-group mb-4">
+                <h1>　남은 학점 : {{ haveCredit }}</h1>
             </div>
         </div>
         <div v-if="onMarket > 0" class="col-4">
