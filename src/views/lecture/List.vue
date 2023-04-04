@@ -603,7 +603,7 @@ setInterval(function () {
     </table>
     <template v-if="lectureClass.length">
         <div style="display: flex; flex-flow: row nowrap; justify-content: center;">
-            <ui class="pagination">
+            <div class="pagination">
                 <li class="page-item"><button class="page-link" :disabled="currentPage === 1"
                         @click="prevPage">Prev</button></li>
                 <li v-for="page in pageCount" :key="page" class="page-item" :class="{ active: returnPage(page) }">
@@ -611,7 +611,7 @@ setInterval(function () {
                 </li>
                 <li class="page-item"><button class="page-link" :disabled="currentPage === pageCount"
                         @click="nextPage">Next</button></li>
-            </ui>
+                </div>
         </div>
     </template>
 </template>
