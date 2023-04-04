@@ -19,15 +19,57 @@ fetchWrapper.get(`/api/user/auth/${user._object.user.id}`).then((res) => {
 </script>
 
 <template>
+<div class="jumbotron">
     <div v-if="user">
-        <h1>안녕하세요 {{ name }}!</h1>
-        <p>구름대학 수강신청에 오신것을 환영합니다.</p>
-        <p><router-link to="/users">수강신청목록</router-link></p>
-        <p><router-link to="/users">강의목록</router-link></p>
-        <p><router-link to="/users">내정보</router-link></p>
+        <h1 class="hh">안녕하세요 {{ name }}님!</h1>
+        <br>
+        <p class="pp">구름대학 수강신청에 오신것을 환영합니다.</p>
+
     </div>
-
-    
-
+</div>
+        <p><router-link to="/users">수강신청목록</router-link></p>
+        <p><router-link to="/lecture">강의목록</router-link></p>
+        <p><router-link to="/mypage">내정보</router-link></p>
+        <p><router-link to="/app">관련영상</router-link></p>
 
 </template>
+
+<style>
+.jumbotron {
+    position: relative;
+    color: rgba(255,255,255,1);
+    background-color: transparent;
+    padding: 50px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 577px;
+    background-image: url("@/assets/background.png");
+    background-size: cover;
+    background-repeat: no-repeat;
+
+
+}
+
+.jumbotron::before {
+    position: absolute;
+    content: "";
+    top:0px;
+    left:0px;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.4);
+}
+
+.hh {
+        position: relative;
+        font-size: 50px;
+        z-index: 100;
+    }
+
+.pp {
+    position: relative;
+    font-size: 30px;
+    z-index: 100;
+}
+</style>
