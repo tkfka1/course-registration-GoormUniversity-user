@@ -36,6 +36,7 @@ const searchLectureClassWeek = ref("");
 const searchLectureClassMajor = ref("");
 // 시간 초기화
 const onMarket = ref(0);
+const offMarket = ref(0);
 const startTime = ref("");
 const endTime = ref("");
 
@@ -57,25 +58,32 @@ myinfo()
 // time 가져오기
 async function timeinfo() {
 
-var date = new Date();
-await fetchWrapper.get(`/api/time/auth/`).then((res) => {
-    for (var i = 0; i < res.length; i++) {
-
-        if (Number(Date.parse(res[i].startTime))-Number(Date.parse(date)) < 0) {
-            if (Number(Date.parse(res[i].endTime))-Number(Date.parse(date)) < 0) {
-                return;
-            }else
-                startTime.value = res[i].startTime;
-                endTime.value = res[i].endTime;
-                onMarket.value = Date.parse(res[i].endTime)-Date.parse(date);
-                return;
-        }else{
+    var date = new Date();
+    await fetchWrapper.get(`/api/time/auth/`).then((res) => {
+        if (res.length != 0) {
+            for (var i = 0; i < res.length; i++) {
+                if (Number(Date.parse(res[i].startTime)) - Number(Date.parse(date)) < 0) {
+                    if (Number(Date.parse(res[i].endTime)) - Number(Date.parse(date)) < 0) {
+                        return;
+                    } else
+                        startTime.value = res[i].startTime;
+                    endTime.value = res[i].endTime;
+                    onMarket.value = Date.parse(res[i].endTime) - Date.parse(date);
+                    return;
+                } else {
+                    onMarket.value = 0;
+                    startTime.value = res[0].startTime;
+                    endTime.value = res[0].endTime;
+                    offMarket.value = Date.parse(res[0].startTime) - Date.parse(date);
+                }
+            }
+        } else {
             onMarket.value = 0;
-            startTime.value = res[0].startTime;
-            endTime.value = res[0].endTime;
+            startTime.value = "";
+            endTime.value = "";
+            offMarket.value = 0;
         }
-    }
-});
+    });
 }
 
 timeinfo()
@@ -244,21 +252,21 @@ function makeList() {
 
 //time
 function msToTime(duration) {
-        var seconds = parseInt((duration/1000)%60)
-            , minutes = parseInt((duration/(1000*60))%60)
-            , hours = parseInt((duration/(1000*60*60))%24);
+    var seconds = parseInt((duration / 1000) % 60)
+        , minutes = parseInt((duration / (1000 * 60)) % 60)
+        , hours = parseInt((duration / (1000 * 60 * 60)) % 24);
 
-        hours = (hours < 10) ? "0" + hours : hours;
-        minutes = (minutes < 10) ? "0" + minutes : minutes;
-        seconds = (seconds < 10) ? "0" + seconds : seconds;
+    hours = (hours < 10) ? "0" + hours : hours;
+    minutes = (minutes < 10) ? "0" + minutes : minutes;
+    seconds = (seconds < 10) ? "0" + seconds : seconds;
 
-        return hours + "시간" + minutes + "분" + seconds + "초";
-    }
+    return hours + "시간" + minutes + "분" + seconds + "초";
+}
 
 
-setInterval(function(){
-//  console.log("time")
- timeinfo();
+setInterval(function () {
+    //  console.log("time")
+    timeinfo();
 }, 1000)
 
 
@@ -270,58 +278,68 @@ setInterval(function(){
     <div class="form-row">
 
 
-<table class="table col-4">
-    <thead>
-        <tr>
-            <th>이름</th>
-            <th>전공</th>
-            <th>학년</th>
-            <th>학점</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr>
-            <td>{{ name }}</td>
-            <td>{{ majorName }}</td>
-            <td>{{ grade }}학년</td>
-            <td>{{ credit }}</td>
-        </tr>
-    </tbody>
+        <table class="table col-4">
+            <thead>
+                <tr>
+                    <th>이름</th>
+                    <th>전공</th>
+                    <th>학년</th>
+                    <th>학점</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>{{ name }}</td>
+                    <td>{{ majorName }}</td>
+                    <td>{{ grade }}학년</td>
+                    <td>{{ credit }}</td>
+                </tr>
+            </tbody>
 
-</table>
-<div class="col-4">
-    <br>
-    <h1>　 수강학점 : {{ haveCredit }} </h1>
-</div>
-<div v-if="onMarket > 0"  class="col-4">
-    <div class="input-group mb-4">
-        <div class="input-group-prepend">
-        <div class="input-group-text">남은시간</div>
+        </table>
+        <div class="col-4">
+            <div class="input-group mb-4">
+                <div class="input-group-prepend">
+                    <div class="input-group-text">수강학점</div>
+                </div>
+                <div type="text" class="form-control">{{ haveCredit }}</div>
+            </div>
+            <div class="input-group mb-4">
+                <div class="input-group-prepend">
+                    <div class="input-group-text">남은시간</div>
+                </div>
+                <div type="text" class="form-control">{{ msToTime(offMarket) }}</div>
+            </div>
         </div>
-        <div type="text" class="form-control">{{ msToTime(onMarket) }}</div>
-    </div>
-    <div class="input-group mb-4">
-        <div class="input-group-prepend">
-        <div class="input-group-text">종료시간</div>
+        <div v-if="onMarket > 0" class="col-4">
+            <div class="input-group mb-4">
+                <div class="input-group-prepend">
+                    <div class="input-group-text">남은시간</div>
+                </div>
+                <div type="text" class="form-control">{{ msToTime(onMarket) }}</div>
+            </div>
+            <div class="input-group mb-4">
+                <div class="input-group-prepend">
+                    <div class="input-group-text">종료시간</div>
+                </div>
+                <div type="text" class="form-control">{{ endTime.replace("T", " ").slice(5, 16) }}</div>
+            </div>
         </div>
-        <div type="text" class="form-control">{{ endTime.replace("T"," ").slice(5,16) }}</div>
-    </div>
-</div>
-<div v-else class="col-4">
-    <div class="input-group mb-4">
-        <div class="input-group-prepend">
-        <div class="input-group-text">오픈시간</div>
+        <div v-else class="col-4">
+            <div class="input-group mb-4">
+                <div class="input-group-prepend">
+                    <div class="input-group-text">오픈시간</div>
+                </div>
+                <div type="text" class="form-control">{{ startTime.replace("T", " ").slice(5, 16) }}</div>
+            </div>
+            <div class="input-group mb-4">
+                <div class="input-group-prepend">
+                    <div class="input-group-text">종료시간</div>
+                </div>
+                <div type="text" class="form-control">{{ endTime.replace("T", " ").slice(5, 16) }}</div>
+            </div>
         </div>
-        <div type="text" class="form-control">{{ startTime.replace("T"," ").slice(5,16) }}</div>
     </div>
-    <div class="input-group mb-4">
-        <div class="input-group-prepend">
-        <div class="input-group-text">종료시간</div>
-        </div>
-        <div type="text" class="form-control">{{ endTime.replace("T"," ").slice(5,16) }}</div>
-    </div>
-</div>
-</div>
 
 
     <br>
