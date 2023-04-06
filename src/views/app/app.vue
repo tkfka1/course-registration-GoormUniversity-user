@@ -86,12 +86,8 @@ export default {
     imageUpload() {
       this.files = []
       this.filesPreview = []
-      // console.log(this.$refs.files.files);
-
-      // this.files = [...this.files, this.$refs.files.files];
-      //하나의 배열로 넣기
       let num = -1;
-      for (let i = 0; i < this.$refs.files.files.length; i++) {
+      for (let i = 0; i < this.$refs.files.files1.length; i++) {
         this.files = [
           ...this.files,
           //이미지 업로드
@@ -99,47 +95,14 @@ export default {
             //실제 파일
             file: this.$refs.files.files[0],
             //이미지 프리뷰
-            preview: URL.createObjectURL(this.$refs.files.files[0]),
+            preview: URL.createObjectURL(this.$refs.files1.files[0]),
             //삭제및 관리를 위한 number
             number: 0
           }
         ];
         num = i;
-        //이미지 업로드용 프리뷰
-        // this.filesPreview = [
-        //   ...this.filesPreview,
-        //   { file: URL.createObjectURL(this.$refs.files.files[i]), number: i }
-        // ];
       }
       this.uploadImageIndex = num; //이미지 index의 마지막 값 + 1 저장
-      // console.log(this.files);
-      // console.log(this.filesPreview);
-    },
-
-    imageAddUpload() {
-      // console.log(this.$refs.files.files);
-
-      // this.files = [...this.files, this.$refs.files.files];
-      //하나의 배열로 넣기c
-      let num = -1;
-      for (let i = 0; i < this.$refs.files.files.length; i++) {
-        // console.log(this.uploadImageIndex);
-        this.files = [
-          ...this.files,
-          //이미지 업로드
-          {
-            //실제 파일
-            file: this.$refs.files.files[i],
-            //이미지 프리뷰
-            preview: URL.createObjectURL(this.$refs.files.files[i]),
-            //삭제및 관리를 위한 number
-            number: i + this.uploadImageIndex
-          }
-        ];
-        num = i;
-      }
-      this.uploadImageIndex = this.uploadImageIndex + num + 1;
-
       // console.log(this.files);
       // console.log(this.filesPreview);
     },
