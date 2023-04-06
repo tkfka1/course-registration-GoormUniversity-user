@@ -87,13 +87,13 @@ export default {
       this.files = []
       this.filesPreview = []
       let num = -1;
-      for (let i = 0; i < this.$refs.files.files1.length; i++) {
+      for (let i = 0; i < this.$refs.files1.files.length; i++) {
         this.files = [
           ...this.files,
           //이미지 업로드
           {
             //실제 파일
-            file: this.$refs.files.files[0],
+            file: this.$refs.files1.files[0],
             //이미지 프리뷰
             preview: URL.createObjectURL(this.$refs.files1.files[0]),
             //삭제및 관리를 위한 number
